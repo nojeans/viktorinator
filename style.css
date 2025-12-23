@@ -48,10 +48,10 @@ button:hover {
 }
 
 #category {
-    font-size: 24px; 
+    font-size: 24px;
     font-weight: bold;
-    margin-top: 20px; /* отступ сверху */
-    margin-bottom: 50px; /* отступ до вопроса */
+    margin-top: 20px;
+    margin-bottom: 50px;
 }
 
 #question {
@@ -74,3 +74,144 @@ button:hover {
     margin-top: 24px;
 }
 
+/* =====================================================
+   НОВОЕ: кнопка-настройка (шестерёнка)
+   ===================================================== */
+
+.settings-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: #333;
+
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: background 0.2s;
+}
+
+.settings-btn:hover {
+    background: #d5d5d5;
+}
+
+/* =====================================================
+   НОВОЕ: затемнение фона при открытом попапе
+   ===================================================== */
+
+.settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0,0,0,0.4);
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* =====================================================
+   НОВОЕ: попап настроек
+   ===================================================== */
+
+.settings-modal {
+    background: #fff;
+    padding: 20px 25px;
+    border-radius: 12px;
+
+    width: 90%;
+    max-width: 420px;
+
+    text-align: left;
+}
+
+.settings-modal h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 20px;
+    color: #333;
+}
+
+/* =====================================================
+   НОВОЕ: список категорий
+   ===================================================== */
+
+.category-list {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.category-item input {
+    margin-right: 8px;
+}
+
+/* =====================================================
+   НОВОЕ: кнопки в попапе
+   ===================================================== */
+
+.settings-actions {
+    text-align: right;
+}
+
+.settings-actions button {
+    margin: 5px 0 0 10px;
+}
+
+/* =====================================================
+   Минимальный адаптив (аккуратно)
+   ===================================================== */
+
+@media (max-width: 600px) {
+    .container {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    #question {
+        font-size: 22px;
+    }
+
+    #category {
+        font-size: 20px;
+    }
+}
+.settings-btn {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 22px;          /* размер шестерёнки */
+    cursor: pointer;
+    color: #888;
+    padding: 6px;
+    border-radius: 50%;
+    transition: 
+        background 0.2s,
+        transform 0.2s,
+        color 0.2s;
+}
+.settings-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
