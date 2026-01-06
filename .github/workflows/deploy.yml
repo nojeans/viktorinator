@@ -27,22 +27,19 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Choose deploy path
-        run: |
-          if [ "${{ github.event.inputs.target }}" = "prod" ]; then
-            echo "DEPLOY_PATH=${{ secrets.PROD_PATH }}" >> $GITHUB_ENV
-          else
-            echo "DEPLOY_PATH=${{ secrets.DEV_PATH }}" >> $GITHUB_ENV
-          fi
-
       - name: Deploy files via rsync
         run: |
+          if [ "${{ github.event.inputs.target }}" = "prod" ]; then
+            TARGET_PATH="${{ secrets.PROD_PATH }}"
+          else
+            TARGET_PATH="${{ secrets.DEV_PATH }}"
+          fi
+
           rsync -avz --delete \
             --exclude=".git" \
             --exclude=".github" \
             ./ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$TARGET_PATH
 
       - name: Finish
-        run: |
-          echo "Deploy finished"
+        run: echo "Deploy completed"
