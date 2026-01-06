@@ -28,9 +28,6 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-          # фикс нестабильного ssh-keyscan
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-
       - name: Select deploy path
         run: |
           if [ "${{ github.event.inputs.target }}" = "prod" ]; then
@@ -42,13 +39,18 @@ jobs:
       - name: Test SSH connection
         run: |
           ssh -i ~/.ssh/id_ed25519 \
-              -o StrictHostKeyChecking=yes \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=15 \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
               "echo 'SSH OK: $(hostname)'"
 
       - name: Deploy files
         run: |
           rsync -avz --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
             --exclude='.git' \
             ./ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}
+
