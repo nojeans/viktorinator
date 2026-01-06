@@ -1,12 +1,12 @@
-name: Manual Deploy
+name: Manual Deploy (Dev / Prod)
 
 on:
   workflow_dispatch:
     inputs:
-      target:
+      environment:
         description: 'Where to deploy'
         required: true
-        default: 'dev'
+        default: dev
         type: choice
         options:
           - dev
@@ -20,26 +20,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set deploy path
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            echo "DEPLOY_PATH=/home/c/cw49328/quiz/public_html" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_PATH=/home/c/cw49328/Quiz-dev/public_html" >> $GITHUB_ENV
+          fi
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 700 ~/.ssh
+
+          cat << 'EOF' > ~/.ssh/id_ed25519
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          EOF
+
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy files via rsync
+      - name: Test SSH connection
         run: |
-          if [ "${{ github.event.inputs.target }}" = "prod" ]; then
-            TARGET_PATH="${{ secrets.PROD_PATH }}"
-          else
-            TARGET_PATH="${{ secrets.DEV_PATH }}"
-          fi
+          ssh -o StrictHostKeyChecking=yes \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "echo 'SSH connection OK'"
 
+      - name: Deploy via rsync
+        run: |
           rsync -avz --delete \
-            --exclude=".git" \
-            --exclude=".github" \
-            ./ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$TARGET_PATH
-
-      - name: Finish
-        run: echo "Deploy completed"
+          --exclude=".git" \
+          --exclude=".github" \
+          ./ \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}
