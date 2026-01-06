@@ -59,8 +59,9 @@ jobs:
 
       - name: Deploy files
         run: |
-           rsync -avz \
-            -e "ssh -i ~/.ssh/id_ed25519 -p '${{ secrets.SSH_PORT }}' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-            --exclude='.git' \
-            ./ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:"${{ env.DEPLOY_PATH }}/"
+           echo "Deploying to: [${{ env.DEPLOY_PATH }}]"
+             rsync -avz \
+              -e "ssh -i ~/.ssh/id_ed25519 -p '${{ secrets.SSH_PORT }}' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+              --exclude='.git' \
+              ./ \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:"${{ env.DEPLOY_PATH }}/"
