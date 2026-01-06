@@ -3,10 +3,10 @@ name: Manual Deploy (Dev / Prod)
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Where to deploy'
+      target:
+        description: "Куда деплоим?"
         required: true
-        default: dev
+        default: "dev"
         type: choice
         options:
           - dev
@@ -20,36 +20,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set deploy path
-        run: |
-          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            echo "DEPLOY_PATH=/home/c/cw49328/quiz/public_html" >> $GITHUB_ENV
-          else
-            echo "DEPLOY_PATH=/home/c/cw49328/Quiz-dev/public_html" >> $GITHUB_ENV
-          fi
-
-      - name: Setup SSH
+      - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-          cat << 'EOF' > ~/.ssh/id_ed25519
-          ${{ secrets.SSH_PRIVATE_KEY }}
-          EOF
-
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+          # фикс нестабильного ssh-keyscan
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Select deploy path
+        run: |
+          if [ "${{ github.event.inputs.target }}" = "prod" ]; then
+            echo "DEPLOY_PATH=${{ secrets.PROD_DEPLOY_PATH }}" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_PATH=${{ secrets.DEV_DEPLOY_PATH }}" >> $GITHUB_ENV
+          fi
 
       - name: Test SSH connection
         run: |
-          ssh -o StrictHostKeyChecking=yes \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-          "echo 'SSH connection OK'"
+          ssh -i ~/.ssh/id_ed25519 \
+              -o StrictHostKeyChecking=yes \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "echo 'SSH OK: $(hostname)'"
 
-      - name: Deploy via rsync
+      - name: Deploy files
         run: |
           rsync -avz --delete \
-          --exclude=".git" \
-          --exclude=".github" \
-          ./ \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}
+            --exclude='.git' \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}
