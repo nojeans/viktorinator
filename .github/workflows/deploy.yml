@@ -46,35 +46,51 @@ jobs:
           fi
           echo "Deploying to: $DEPLOY_PATH"
 
-      - name: Debug SSH_PORT
+      # ---------- SSH TEST (RETRY) ----------
+      - name: Test SSH connection (retry)
         run: |
-          if [ -z "${{ secrets.SSH_PORT }}" ]; then
-            echo "SSH_PORT is EMPTY"
-            exit 1
-          else
-            echo "SSH_PORT is SET"
-          fi
+          for i in 1 2 3; do
+            echo "SSH attempt $i..."
+            ssh \
+              -i ~/.ssh/id_ed25519 \
+              -p "${{ secrets.SSH_PORT }}" \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=15 \
+              -o ServerAliveInterval=5 \
+              -o ServerAliveCountMax=3 \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "echo 'SSH OK: $(hostname)'" && break
 
-      # ---------- SSH TEST ----------
-      - name: Test SSH connection
-        run: |
-          ssh \
-            -i ~/.ssh/id_ed25519 \
-            -p "${{ secrets.SSH_PORT }}" \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ConnectTimeout=15 \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "echo 'SSH OK: $(hostname)'"
+            echo "SSH failed, retry in 5s..."
+            sleep 5
 
-      # ---------- DEPLOY ----------
-      - name: Deploy files (safe mode, no delete)
+            if [ "$i" -eq 3 ]; then
+              echo "SSH failed after 3 attempts"
+              exit 1
+            fi
+          done
+
+      # ---------- DEPLOY (RETRY, SAFE MODE) ----------
+      - name: Deploy files (safe mode, retry, no delete)
         run: |
-          rsync -avz \
-            --exclude=".git/" \
-            --exclude=".github/" \
-            --exclude="node_modules/" \
-            --exclude=".env" \
-            -e "ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-            ./ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DEPLOY_PATH
+          for i in 1 2 3; do
+            echo "Deploy attempt $i..."
+
+            rsync -avz \
+              --exclude=".git/" \
+              --exclude=".github/" \
+              --exclude="node_modules/" \
+              --exclude=".env" \
+              -e "ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+              ./ \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DEPLOY_PATH && break
+
+            echo "Deploy failed, retry in 5s..."
+            sleep 5
+
+            if [ "$i" -eq 3 ]; then
+              echo "Deploy failed after 3 attempts"
+              exit 1
+            fi
+          done
