@@ -33,9 +33,9 @@ jobs:
       - name: Select deploy path
         run: |
           if [ "${{ github.event.inputs.target }}" = "prod" ]; then
-            echo "DEPLOY_PATH=${{ secrets.PROD_DEPLOY_PATH }}" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=${{ secrets.PROD_PATH }}" >> $GITHUB_ENV
           else
-            echo "DEPLOY_PATH=${{ secrets.DEV_DEPLOY_PATH }}" >> $GITHUB_ENV
+            echo "DEPLOY_PATH=${{ secrets.DEV_PATH }}" >> $GITHUB_ENV
           fi
 
       - name: Debug deploy path
