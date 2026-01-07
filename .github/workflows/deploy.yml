@@ -20,6 +20,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ---------- SSH ----------
       - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
@@ -28,6 +29,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
+      # ---------- DEPLOY PATH ----------
       - name: Select deploy path
         run: |
           if [ "${{ github.event.inputs.target }}" = "prod" ]; then
@@ -35,6 +37,14 @@ jobs:
           else
             echo "DEPLOY_PATH=${{ secrets.DEV_DEPLOY_PATH }}" >> $GITHUB_ENV
           fi
+
+      - name: Debug deploy path
+        run: |
+          if [ -z "$DEPLOY_PATH" ]; then
+            echo "DEPLOY_PATH is EMPTY"
+            exit 1
+          fi
+          echo "Deploying to: $DEPLOY_PATH"
 
       - name: Debug SSH_PORT
         run: |
@@ -45,6 +55,7 @@ jobs:
             echo "SSH_PORT is SET"
           fi
 
+      # ---------- SSH TEST ----------
       - name: Test SSH connection
         run: |
           ssh \
@@ -56,14 +67,14 @@ jobs:
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
             "echo 'SSH OK: $(hostname)'"
 
-
-      - name: Deploy files
-        env:
-           DEPLOY_PATH: ${{ github.event.inputs.target == 'prod' && secrets.PROD_DEPLOY_PATH || secrets.DEV_DEPLOY_PATH }}
+      # ---------- DEPLOY ----------
+      - name: Deploy files (safe mode, no delete)
         run: |
-           echo "Deploying to: [${DEPLOY_PATH}]"
-             rsync -avz \
-              -e "ssh -i ~/.ssh/id_ed25519 -p '${{ secrets.SSH_PORT }}' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-              --exclude='.git' \
-              ./ \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:"${DEPLOY_PATH}/"
+          rsync -avz \
+            --exclude=".git/" \
+            --exclude=".github/" \
+            --exclude="node_modules/" \
+            --exclude=".env" \
+            -e "ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DEPLOY_PATH
