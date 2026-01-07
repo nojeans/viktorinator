@@ -24,9 +24,7 @@ jobs:
       - name: Run API tests (Postman / Newman)
         run: |
           npm install -g newman
-          newman run postman/collection.json \
-            --reporters cli,summary \
-            --timeout-request 5000
+          newman run postman/collection.json --reporters cli,summary --timeout-request 5000
 
       # ---------- SSH ----------
       - name: Prepare SSH
