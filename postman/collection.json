@@ -1,0 +1,19 @@
+{
+	"info": {
+		"_postman_id": "75977451-456a-43e2-9d6b-ba5658dbf001",
+		"name": "Viktorinator",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49912097",
+		"_collection_link": "https://nojeans-3020623.postman.co/workspace/nojeans's-Workspace~d5504870-68b3-4a2a-867e-90c6767b8eff/collection/49912097-75977451-456a-43e2-9d6b-ba5658dbf001?action=share&source=collection_link&creator=49912097"
+	},
+	"item": [
+		{
+			"name": "GET with basic tests",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
