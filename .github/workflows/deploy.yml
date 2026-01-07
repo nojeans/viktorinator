@@ -20,6 +20,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ---------- API TESTS (NEWMAN) ----------
+      - name: Run API tests (Postman / Newman)
+        run: |
+          npm install -g newman
+          newman run postman/collection.json
+
       # ---------- SSH ----------
       - name: Prepare SSH
         run: |
@@ -46,7 +52,7 @@ jobs:
           fi
           echo "Deploying to: $DEPLOY_PATH"
 
-      # ---------- SSH TEST (RETRY) ----------
+      # ---------- SSH TEST (RETRY x6) ----------
       - name: Test SSH connection (retry)
         run: |
           for i in 1 2 3 4 5 6; do
@@ -65,13 +71,13 @@ jobs:
             echo "SSH failed, retry in 5s..."
             sleep 5
 
-            if [ "$i" -eq 3 ]; then
-              echo "SSH failed after 3 attempts"
+            if [ "$i" -eq 6 ]; then
+              echo "SSH failed after 6 attempts"
               exit 1
             fi
           done
 
-      # ---------- DEPLOY (RETRY, SAFE MODE) ----------
+      # ---------- DEPLOY (RETRY x6, SAFE MODE) ----------
       - name: Deploy files (safe mode, retry, no delete)
         run: |
           for i in 1 2 3 4 5 6; do
@@ -89,8 +95,8 @@ jobs:
             echo "Deploy failed, retry in 5s..."
             sleep 5
 
-            if [ "$i" -eq 3 ]; then
-              echo "Deploy failed after 3 attempts"
+            if [ "$i" -eq 6 ]; then
+              echo "Deploy failed after 6 attempts"
               exit 1
             fi
           done
