@@ -9,9 +9,57 @@
 	"item": [
 		{
 			"name": "GET with basic tests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Body matches string category\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"category\");\r",
+							"});\r",
+							"pm.test(\"Body matches string question\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"question\");\r",
+							"});\r",
+							"pm.test(\"Body matches string answer\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"answer\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept-encoding": true
+				}
+			},
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://quiz.qalibr.ru/get_question.php",
+					"protocol": "https",
+					"host": [
+						"quiz",
+						"qalibr",
+						"ru"
+					],
+					"path": [
+						"get_question.php"
+					]
+				}
 			},
 			"response": []
 		}
