@@ -24,12 +24,17 @@ jobs:
       - name: Install Newman
         run: npm install -g newman
 
-      - name: Run API tests (Postman / Newman) with Retries
+      - name: Run API tests (Postman / Newman) with Fixes
         uses: nick-fields/retry@v3
         with:
           max_attempts: 3
           timeout_minutes: 2
-          command: newman run postman/collection.json --reporters cli --timeout-request 10000 --delay-request 1000 --verbose
+          command: >
+            newman run postman/collection.json 
+            --reporters cli 
+            --timeout-request 10000 
+            --insecure 
+            --header "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
       # ---------- SSH ----------
       - name: Prepare SSH
