@@ -46,55 +46,32 @@ jobs:
           fi
           echo "Deploying to: $DEPLOY_PATH"
 
-      # ---------- SSH TEST (RETRY x1, IPv4 FORCED) ----------
-      - name: Test SSH connection (retry)
+      # ---------- SSH TEST (IPv4 FORCED) ----------
+      - name: Test SSH connection
         run: |
-          for i in 1; do
-            echo "SSH attempt $i..."
-            ssh -4 \
-              -i ~/.ssh/id_ed25519 \
-              -p "${{ secrets.SSH_PORT }}" \
-              -o AddressFamily=inet \
-              -o StrictHostKeyChecking=no \
-              -o UserKnownHostsFile=/dev/null \
-              -o ConnectTimeout=15 \
-              -o ServerAliveInterval=5 \
-              -o ServerAliveCountMax=3 \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-              "echo 'SSH OK: $(hostname)'" && break
+          ssh -4 \
+            -i ~/.ssh/id_ed25519 \
+            -p "${{ secrets.SSH_PORT }}" \
+            -o AddressFamily=inet \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ConnectTimeout=15 \
+            -o ServerAliveInterval=5 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "echo 'SSH OK: $(hostname)'"
 
-            echo "SSH failed, retry in 5s..."
-            sleep 5
-
-            if [ "$i" -eq 6 ]; then
-              echo "SSH failed after 1 attempts"
-              exit 1
-            fi
-          done
-
-      # ---------- DEPLOY (RETRY x1, SAFE MODE, IPv4 FORCED) ----------
-      - name: Deploy files (safe mode, retry, no delete)
+      # ---------- DEPLOY (SAFE MODE, NO DELETE, IPv4 FORCED) ----------
+      - name: Deploy files (safe mode, no delete)
         run: |
-          for i in 1; do
-            echo "Deploy attempt $i..."
-
-            rsync -avz \
-              --exclude=".git/" \
-              --exclude=".github/" \
-              --exclude="node_modules/" \
-              --exclude=".env" \
-              -e "ssh -4 -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o AddressFamily=inet -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-              ./ \
-              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DEPLOY_PATH && break
-
-            echo "Deploy failed, retry in 5s..."
-            sleep 5
-
-            if [ "$i" -eq 6 ]; then
-              echo "Deploy failed after 6 attempts"
-              exit 1
-            fi
-          done
+          rsync -avz \
+            --exclude=".git/" \
+            --exclude=".github/" \
+            --exclude="node_modules/" \
+            --exclude=".env" \
+            -e "ssh -4 -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PORT }} -o AddressFamily=inet -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DEPLOY_PATH
 
       # ---------- API TESTS (NEWMAN, NON-BLOCKING) ----------
       - name: Install Newman
