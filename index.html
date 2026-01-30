@@ -47,7 +47,7 @@
 <button id="settingsBtn" class="settings-btn" title="Настройки категорий">⚙️</button>
 
 <!-- Затемнение + попап -->
-<div id="settingsOverlay" class="settings-overlay" hidden>
+<div id="settingsOverlay" class="settings-overlay">
     <div class="settings-modal">
         <h2>Выбор категорий</h2>
 
@@ -134,29 +134,33 @@ function applySelectedCategories() {
 }
 
 /* ===== SETTINGS ===== */
-settingsBtn.onclick = () => {
-    settingsOverlay.hidden = false;
+function openSettings() {
     const selected = getCategoriesFromQuery();
     document.querySelectorAll('.category-item input').forEach(cb => {
         cb.checked = selected.length === 0 || selected.includes(cb.value);
     });
-};
+    settingsOverlay.classList.add('open');
+}
 
-closeBtn.onclick = () => {
-    settingsOverlay.hidden = true;
-};
+function closeSettings() {
+    settingsOverlay.classList.remove('open');
+}
 
-applyBtn.onclick = () => {
+settingsBtn.addEventListener('click', openSettings);
+
+closeBtn.addEventListener('click', closeSettings);
+
+applyBtn.addEventListener('click', () => {
     applySelectedCategories();
-    settingsOverlay.hidden = true;
-};
-
-settingsOverlay.addEventListener('click', () => {
-    applySelectedCategories();
-    settingsOverlay.hidden = true;
+    closeSettings();
 });
 
-settingsModal.addEventListener('click', e => e.stopPropagation());
+settingsOverlay.addEventListener('click', (e) => {
+    if (e.target === settingsOverlay) {
+        applySelectedCategories();
+        closeSettings();
+    }
+});
 
 /* ===== QUIZ ===== */
 spinBtn.onclick = () => {
