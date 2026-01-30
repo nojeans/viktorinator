@@ -120,6 +120,7 @@ button:hover {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    cursor: pointer;
 }
 
 .settings-overlay.open {
@@ -139,6 +140,7 @@ button:hover {
     max-width: 420px;
 
     text-align: left;
+    cursor: default;
 }
 
 .settings-modal h2 {
