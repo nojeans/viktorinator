@@ -2,14 +2,25 @@
 
 header('Content-Type: application/json; charset=utf-8');
 
+// Разрешаем только GET
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode(
+        ['error' => 'Метод не поддерживается'],
+        JSON_UNESCAPED_UNICODE
+    );
+    exit;
+}
+
 // Читаем базу вопросов
-$data = json_decode(file_get_contents('questions.json'), true);
+$data = json_decode(file_get_contents(__DIR__ . '/questions.json'), true);
 
 if (
     !$data ||
     !isset($data['categories']) ||
     !is_array($data['categories'])
 ) {
+    http_response_code(500);
     echo json_encode(
         ['error' => 'Некорректная структура questions.json'],
         JSON_UNESCAPED_UNICODE
@@ -60,6 +71,7 @@ foreach ($data['categories'] as $category) {
 
 // Если после фильтрации вопросов нет
 if (empty($pool)) {
+    http_response_code(404);
     echo json_encode(
         ['error' => 'Нет вопросов по выбранным категориям'],
         JSON_UNESCAPED_UNICODE

@@ -111,15 +111,11 @@ button:hover {
     bottom: 0;
 
     background: rgba(0,0,0,0.4);
-    display: none;
+    display: flex;
 
     align-items: center;
     justify-content: center;
     z-index: 1000;
-}
-
-.settings-overlay.open {
-    display: flex;
 }
 
 /* ===============================

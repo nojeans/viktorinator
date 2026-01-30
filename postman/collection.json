@@ -14,17 +14,34 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"pm.test(\"Body matches string category\", function () {\r",
-							"    pm.expect(pm.response.text()).to.include(\"category\");\r",
-							"});\r",
-							"pm.test(\"Body matches string question\", function () {\r",
-							"    pm.expect(pm.response.text()).to.include(\"question\");\r",
-							"});\r",
-							"pm.test(\"Body matches string answer\", function () {\r",
-							"    pm.expect(pm.response.text()).to.include(\"answer\");\r",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is valid JSON\", function () {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"Response has correct structure\", function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json).to.have.property(\"category\");",
+							"    pm.expect(json).to.have.property(\"question\");",
+							"    pm.expect(json).to.have.property(\"answer\");",
+							"});",
+							"",
+							"pm.test(\"Field types are correct\", function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json.category).to.be.a(\"string\");",
+							"    pm.expect(json.question).to.be.a(\"string\");",
+							"    pm.expect(json.answer).to.be.an(\"array\");",
+							"    pm.expect(json.answer.length).to.be.above(0);",
+							"});",
+							"",
+							"pm.test(\"Fields are not empty\", function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json.category).to.not.be.empty;",
+							"    pm.expect(json.question).to.not.be.empty;",
+							"    pm.expect(json.answer[0]).to.not.be.empty;",
 							"});"
 						],
 						"type": "text/javascript",
@@ -48,6 +65,162 @@
 						"disabled": true
 					}
 				],
+				"url": {
+					"raw": "https://quiz.qalibr.ru/get_question.php",
+					"protocol": "https",
+					"host": [
+						"quiz",
+						"qalibr",
+						"ru"
+					],
+					"path": [
+						"get_question.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET with category filter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct structure\", function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json).to.have.property(\"category\");",
+							"    pm.expect(json).to.have.property(\"question\");",
+							"    pm.expect(json).to.have.property(\"answer\");",
+							"});",
+							"",
+							"pm.test(\"Category matches filter\", function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json.category).to.include(\"1.\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept-encoding": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://quiz.qalibr.ru/get_question.php?categories=1",
+					"protocol": "https",
+					"host": [
+						"quiz",
+						"qalibr",
+						"ru"
+					],
+					"path": [
+						"get_question.php"
+					],
+					"query": [
+						{
+							"key": "categories",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET with invalid category returns 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Response contains error message\", function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json).to.have.property(\"error\");",
+							"    pm.expect(json.error).to.be.a(\"string\");",
+							"    pm.expect(json.error).to.not.be.empty;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept-encoding": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://quiz.qalibr.ru/get_question.php?categories=999",
+					"protocol": "https",
+					"host": [
+						"quiz",
+						"qalibr",
+						"ru"
+					],
+					"path": [
+						"get_question.php"
+					],
+					"query": [
+						{
+							"key": "categories",
+							"value": "999"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST returns 405",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 405\", function () {",
+							"    pm.response.to.have.status(405);",
+							"});",
+							"",
+							"pm.test(\"Response contains error message\", function () {",
+							"    var json = pm.response.json();",
+							"    pm.expect(json).to.have.property(\"error\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept-encoding": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
 				"url": {
 					"raw": "https://quiz.qalibr.ru/get_question.php",
 					"protocol": "https",

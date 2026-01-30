@@ -103,6 +103,7 @@ const applyBtn = document.getElementById('applyCategories');
 const closeBtn = document.getElementById('closeModal');
 
 let currentData = null;
+let timerId = null;
 
 /* ===== HELPERS ===== */
 function escapeHtml(text) {
@@ -164,6 +165,11 @@ spinBtn.onclick = () => {
     answerEl.textContent = '';
     showAnswerBtn.style.display = 'none';
 
+    if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+    }
+
     fetch('get_question.php' + location.search)
         .then(r => r.json())
         .then(data => {
@@ -176,11 +182,12 @@ spinBtn.onclick = () => {
             let t = 3;
             timerEl.textContent = t;
 
-            const i = setInterval(() => {
+            timerId = setInterval(() => {
                 if (--t > 0) {
                     timerEl.textContent = t;
                 } else {
-                    clearInterval(i);
+                    clearInterval(timerId);
+                    timerId = null;
                     timerEl.textContent = '';
                     categoryEl.textContent = 'Категория: ' + data.category;
                     questionEl.textContent = data.question;
@@ -192,6 +199,10 @@ spinBtn.onclick = () => {
                     };
                 }
             }, 1000);
+        })
+        .catch(() => {
+            timerEl.textContent = '';
+            categoryEl.textContent = 'Ошибка загрузки. Проверьте соединение.';
         });
 };
 </script>
